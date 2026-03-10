@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ShipTrack Pro — Inventory</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body class="app-page">
+  <nav class="sidebar">
+    <div class="sidebar-brand">⬡ ShipTrack<span>Pro</span></div>
+    <ul class="nav-links">
+      <li><a href="/dashboard">⬛ Dashboard</a></li>
+      <li class="active"><a href="/inventory">◧ Inventory</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <span>👤 {{ current_user.username }}</span>
+      <a href="/logout" class="logout-btn">Logout</a>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Inventory & Shipments</h1>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}<div class="alert success">{{ messages[0] }}</div>{% endif %}
+    {% endwith %}
+
+    <!-- Shipments Section -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2>📦 Shipments</h2>
+        <button class="btn-add" onclick="document.getElementById('addShipment').classList.toggle('hidden')">+ Add Shipment</button>
+      </div>
+
+      <form id="addShipment" class="inline-form hidden" method="POST" action="/add_shipment">
+        <input name="tracking_number" placeholder="Tracking #" required/>
+        <input name="origin" placeholder="Origin" required/>
+        <input name="destination" placeholder="Destination" required/>
+        <select name="status">
+          <option>Pending</option>
+          <option>In Transit</option>
+          <option>Delivered</option>
+        </select>
+        <input name="carrier" placeholder="Carrier" required/>
+        <button type="submit" class="btn-save">Save</button>
+      </form>
+
+      <table class="data-table">
+        <thead>
+          <tr><th>Tracking #</th><th>Origin</th><th>Destination</th><th>Carrier</th><th>Date</th><th>Status</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          {% for s in shipments %}
+          <tr>
+            <td class="mono">{{ s.tracking_number }}</td>
+            <td>{{ s.origin }}</td>
+            <td>{{ s.destination }}</td>
+            <td>{{ s.carrier }}</td>
+            <td class="mono">{{ s.date }}</td>
+            <td><span class="badge badge-{{ s.status | lower | replace(' ', '-') }}">{{ s.status }}</span></td>
+            <td><a href="/delete_shipment/{{ s.id }}" class="btn-delete" onclick="return confirm('Delete this shipment?')">✕</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Inventory Section -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2>🏭 Inventory Items</h2>
+        <button class="btn-add" onclick="document.getElementById('addInventory').classList.toggle('hidden')">+ Add Item</button>
+      </div>
+
+      <form id="addInventory" class="inline-form hidden" method="POST" action="/add_inventory">
+        <input name="name" placeholder="Item Name" required/>
+        <input name="sku" placeholder="SKU" required/>
+        <input name="quantity" type="number" placeholder="Quantity" required/>
+        <input name="warehouse" placeholder="Warehouse"/>
+        <input name="category" placeholder="Category"/>
+        <button type="submit" class="btn-save">Save</button>
+      </form>
+
+      <table class="data-table">
+        <thead>
+          <tr><th>Item Name</th><th>SKU</th><th>Quantity</th><th>Warehouse</th><th>Category</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td>{{ item.name }}</td>
+            <td class="mono">{{ item.sku }}</td>
+            <td class="qty {% if item.quantity < 50 %}low{% endif %}">{{ item.quantity }}</td>
+            <td>{{ item.warehouse }}</td>
+            <td>{{ item.category }}</td>
+            <td><a href="/delete_inventory/{{ item.id }}" class="btn-delete" onclick="return confirm('Delete this item?')">✕</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</body>
+</html>
